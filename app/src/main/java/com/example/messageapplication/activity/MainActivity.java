@@ -85,11 +85,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private List<UserMessage> getListUserMessage() {
         List<UserMessage> list = new ArrayList<>();
-        list.add(new UserMessage(1, R.drawable.avatar_3d, "Vũ Khắc Vanh", "Đi chơi không?", "6:30"));
-        list.add(new UserMessage(2, R.drawable.avatar_3d, "Bùi Việt Anh", "Haha", "19/05"));
-        list.add(new UserMessage(3, R.drawable.avatar_3d, "Nguyễn Huy Hoàng", "Cảm ơn bạn!", "19/05"));
-        list.add(new UserMessage(4, R.drawable.avatar_3d, "Bùi Xuân Anh", "Tuyệt vời", "18/05"));
-        list.add(new UserMessage(5, R.drawable.avatar_3d, "Nguyễn Văn An", "Hello", "15/05"));
         return list;
     }
 
