@@ -1,11 +1,14 @@
 package com.example.messageapplication.activity;
 
+import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -22,18 +25,23 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.messageapplication.R;
 import com.example.messageapplication.adapter.MessageAdapter;
 import com.example.messageapplication.databinding.ActivityMainBinding;
+import com.example.messageapplication.databinding.LayoutHeaderNavigationBinding;
 import com.example.messageapplication.listener.IClickItemMessageListener;
 import com.example.messageapplication.model.UserMessage;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private ActivityMainBinding mainBinding;
+    private LayoutHeaderNavigationBinding headerBinding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +60,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         toggle.syncState();
 
         mainBinding.navigationView.setNavigationItemSelectedListener(this);
+        NavigationView navigationView = mainBinding.navigationView;
+        View headerView = navigationView.getHeaderView(0);
+        headerBinding = LayoutHeaderNavigationBinding.bind(headerView);
+        showUserInformation();
 
         RecyclerView recyclerView = mainBinding.rcvMessage;
         LinearLayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
@@ -85,6 +97,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private List<UserMessage> getListUserMessage() {
         List<UserMessage> list = new ArrayList<>();
+        list.add(new UserMessage(1, R.drawable.avatar_3d, "Vũ Khắc Vanh", "Đi chơi không?", "6:30"));
+        list.add(new UserMessage(2, R.drawable.avatar_3d, "Bùi Việt Anh", "Haha", "19/05"));
+        list.add(new UserMessage(3, R.drawable.avatar_3d, "Nguyễn Huy Hoàng", "Cảm ơn bạn!", "19/05"));
+        list.add(new UserMessage(4, R.drawable.avatar_3d, "Bùi Xuân Anh", "Tuyệt vời", "18/05"));
+        list.add(new UserMessage(5, R.drawable.avatar_3d, "Nguyễn Văn An", "Hello", "15/05"));
         return list;
     }
 
@@ -102,5 +119,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         mainBinding.drawerLayout.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @SuppressLint("CheckResult")
+    private void showUserInformation() {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            String name = user.getDisplayName();
+            String email = user.getEmail();
+            Uri photoUrl = user.getPhotoUrl();
+
+            if (name == null) {
+                headerBinding.tvUserName.setVisibility(View.GONE);
+            } else {
+                headerBinding.tvUserName.setVisibility(View.VISIBLE);
+                headerBinding.tvUserName.setText(name);
+            }
+            headerBinding.tvUserEmail.setText(email);
+            Glide.with(this).load(photoUrl).error(R.drawable.avatar_3d).into(headerBinding.imgUserAvatar);
+        }
     }
 }

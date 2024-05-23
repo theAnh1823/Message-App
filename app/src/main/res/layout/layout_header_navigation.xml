@@ -7,16 +7,27 @@
     android:gravity="bottom"
     android:background="@color/main_blue">
 
-    <androidx.appcompat.widget.AppCompatImageView
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/img_user_avatar"
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:src="@drawable/avatar_3d"/>
 
     <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/tv_user_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
+        android:text="Nguyen The Anh"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/white"/>
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/tv_user_email"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="theanhnp32@gmail.com"
-        android:textSize="17sp"
+        android:textSize="18sp"
         android:textColor="@color/white"/>
 </LinearLayout>
