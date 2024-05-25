@@ -39,6 +39,7 @@ public class SignUpActivity extends AppCompatActivity {
             getInformationTextInput();
             if (!email.isEmpty() && !confirmedPassword.isEmpty() && !initialPassword.isEmpty()) {
                 if (initialPassword.equals(confirmedPassword) && isValidEmail(email))
+                    signUpBinding.tvWarning.setVisibility(View.GONE);
                     onCLickSignUp();
             } else
                 signUpBinding.tvWarning.setVisibility(View.VISIBLE);
@@ -65,6 +66,7 @@ public class SignUpActivity extends AppCompatActivity {
                             finishAffinity();
                         } else {
                             // If sign in fails, display a message to the user.
+                            signUpBinding.progressBar.setVisibility(View.GONE);
                             signUpBinding.tvWarning.setVisibility(View.VISIBLE);
                         }
                     }

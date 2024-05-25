@@ -25,7 +25,9 @@
     <string name="contacts">Liên hệ</string>
     <string name="settings">Cài đặt</string>
     <string name="invite_friends">Gửi lời mời</string>
-    <string name="log_out">Đăng xuất</string>
+    <string name="sign_out">Đăng xuất</string>
+    <string name="account_authentication">Xác thực tài khoản</string>
+    <string name="notification_of_successful_password_reset">Kiểm tra email để nhận hướng dẫn đặt lại mật khẩu</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
