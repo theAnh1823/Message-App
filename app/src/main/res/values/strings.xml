@@ -3,6 +3,10 @@
     <string name="search">Tìm kiếm</string>
     <string name="next">Tiếp theo</string>
     <string name="enter">Xác nhận</string>
+    <string name="cancel">Hủy</string>
+    <string name="ok">OK</string>
+    <string name="update">Cập nhật</string>
+    <string name="confirm">Xác nhận</string>
 
     <string name="email">Email</string>
     <string name="email_invalid">Email không hợp lệ</string>
@@ -13,6 +17,12 @@
     <string name="create_account">Tạo tài khoản mới</string>
     <string name="enter_the_password">Nhập lại mật khẩu</string>
     <string name="please_check_your_account_or_password">Vui lòng kiểm tra lại tài khoản hoặc mật khẩu của bạn</string>
+    <string name="account_authentication">Xác thực tài khoản</string>
+    <string name="please_fill_in_full_name">Vui lòng điền đầy đủ Họ và Tên</string>
+    <string name="password_must_be_at_least_6_characters">Mật khẩu của bạn phải dài ít nhất 6 ký tự</string>
+    <string name="notification_of_successful_password_reset">Kiểm tra email để nhận hướng dẫn đặt lại mật khẩu</string>
+    <string name="notification_reset_password">Vui lòng nhập địa chỉ email của bạn vào ô bên dưới và nhấn Xác nhận để nhận thông báo đặt lại mật khẩu.</string>
+    <string name="dialog_sign_out">Bạn có chắc chắn muốn đăng xuất khỏi thiết bị?</string>
 
     <string name="enter_phone_number">Vui lòng nhập số điện thoại của bạn</string>
     <string name="phone_number">Số điện thoại</string>
@@ -26,8 +36,23 @@
     <string name="settings">Cài đặt</string>
     <string name="invite_friends">Gửi lời mời</string>
     <string name="sign_out">Đăng xuất</string>
-    <string name="account_authentication">Xác thực tài khoản</string>
-    <string name="notification_of_successful_password_reset">Kiểm tra email để nhận hướng dẫn đặt lại mật khẩu</string>
+    
+    <string name="gender">Giới tính</string>
+    <string name="date_of_birth">Ngày sinh</string>
+    <string name="first_name">Họ</string>
+    <string name="last_name">Tên</string>
+    <string name="female">Nữ</string>
+    <string name="male">Nam</string>
+    <string name="other">Khác</string>
+
+    <string name="key_user_id">user_id</string>
+    <string name="key_email">email</string>
+    <string name="key_password">password</string>
+    <string name="key_name">name</string>
+    <string name="key_first_name">first name</string>
+    <string name="key_last_name">last name</string>
+    <string name="key_birthday">birthday</string>
+    <string name="key_gender">gender</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>

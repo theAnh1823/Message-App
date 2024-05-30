@@ -2,12 +2,14 @@ package com.example.messageapplication.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
-import android.util.Log;
+import android.text.TextWatcher;
+
+import com.example.messageapplication.R;
+
 import android.util.Patterns;
 import android.view.View;
-import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -26,6 +28,7 @@ public class SignUpActivity extends AppCompatActivity {
     private String email;
     private String initialPassword;
     private String confirmedPassword;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,10 +40,14 @@ public class SignUpActivity extends AppCompatActivity {
 
         signUpBinding.btnSignUp.setOnClickListener(v -> {
             getInformationTextInput();
-            if (!email.isEmpty() && !confirmedPassword.isEmpty() && !initialPassword.isEmpty()) {
-                if (initialPassword.equals(confirmedPassword) && isValidEmail(email))
+            if (!email.isEmpty() && !initialPassword.isEmpty() && !confirmedPassword.isEmpty()) {
+                if (initialPassword.length() < 6) {
+                    signUpBinding.textInputLayoutPassword.setError(getString(R.string.password_must_be_at_least_6_characters));
+                } else if (initialPassword.equals(confirmedPassword) && isValidEmail(email)) {
+                    signUpBinding.textInputLayoutPassword.setError(null);
                     signUpBinding.tvWarning.setVisibility(View.GONE);
                     onCLickSignUp();
+                }
             } else
                 signUpBinding.tvWarning.setVisibility(View.VISIBLE);
         });
@@ -60,12 +67,16 @@ public class SignUpActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Intent intent = new Intent(SignUpActivity.this, MainActivity.class);
-                            startActivity(intent);
-                            finishAffinity();
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            if (user != null) {
+                                String userId = user.getUid();
+                                Intent intent = new Intent(SignUpActivity.this, ProfileActivity.class);
+                                intent.putExtra(getString(R.string.key_user_id), userId);
+                                intent.putExtra(getString(R.string.key_email), email);
+                                intent.putExtra(getString(R.string.key_password), initialPassword);
+                                startActivity(intent);
+                            }
                         } else {
-                            // If sign in fails, display a message to the user.
                             signUpBinding.progressBar.setVisibility(View.GONE);
                             signUpBinding.tvWarning.setVisibility(View.VISIBLE);
                         }
