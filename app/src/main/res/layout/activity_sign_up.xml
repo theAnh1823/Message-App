@@ -76,15 +76,8 @@
         android:layout_height="wrap_content"
         android:text="@string/please_check_your_account_or_password"
         android:textColor="@color/red"
-        android:visibility="gone"/>
-
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
         android:visibility="gone"
-        android:indeterminate="false"/>
+        android:paddingHorizontal="15dp"/>
 
     <Button
         android:id="@+id/btn_sign_up"

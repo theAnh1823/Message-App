@@ -1,6 +1,10 @@
 package com.example.messageapplication.adapter;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -12,12 +16,15 @@ import com.example.messageapplication.databinding.ItemChatBinding;
 import com.example.messageapplication.listener.IClickItemMessageListener;
 import com.example.messageapplication.model.UserMessage;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.List;
 
-public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder>{
+public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
     private final Context context;
     private final List<UserMessage> list;
     private IClickItemMessageListener listener;
+
     public MessageAdapter(Context context, List<UserMessage> list, IClickItemMessageListener listener) {
         this.context = context;
         this.list = list;
@@ -34,10 +41,20 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     @Override
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
         UserMessage userMessage = list.get(position);
-        if (userMessage == null){
+        if (userMessage == null) {
             return;
         }
-        holder.chatBinding.avatarMessage.setImageResource(R.drawable.avatar_3d);
+
+        Uri profileImageUri = Uri.parse(userMessage.getImageResource());
+        try {
+            // Lấy InputStream của URI và chuyển thành Bitmap
+            InputStream inputStream = context.getContentResolver().openInputStream(profileImageUri);
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+            holder.chatBinding.avatarMessage.setImageBitmap(bitmap);
+        } catch (FileNotFoundException e) {
+            Log.e("ProfileImageError", "File not found: " + e.getMessage());
+        }
+
         holder.chatBinding.tvMessageTime.setText(userMessage.getMessageTime());
         holder.chatBinding.tvUsername.setText(userMessage.getUserName());
         holder.chatBinding.tvLastMessageContent.setText(userMessage.getLastMessage());
@@ -49,7 +66,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     @Override
     public int getItemCount() {
-        if (list != null){
+        if (list != null) {
             return list.size();
         }
         return 0;
@@ -57,7 +74,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
 
     public static class MessageViewHolder extends RecyclerView.ViewHolder {
         private final ItemChatBinding chatBinding;
-        public MessageViewHolder(ItemChatBinding chatBinding){
+
+        public MessageViewHolder(ItemChatBinding chatBinding) {
             super(chatBinding.getRoot());
             this.chatBinding = chatBinding;
         }

@@ -1,13 +1,17 @@
 package com.example.messageapplication.model;
 
-public class UserMessage {
-    private int id;
-    private int imageResource;
+import android.os.Parcelable;
+
+import java.io.Serializable;
+
+public class UserMessage implements Serializable {
+    private String id;
+    private String imageResource;
     private String userName;
     private String lastMessage;
     private String messageTime;
 
-    public UserMessage(int id, int imageResource, String userName, String lastMessage, String messageTime) {
+    public UserMessage(String id, String imageResource, String userName, String lastMessage, String messageTime) {
         this.id = id;
         this.imageResource = imageResource;
         this.userName = userName;
@@ -15,19 +19,19 @@ public class UserMessage {
         this.messageTime = messageTime;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public int getImageResource() {
+    public String getImageResource() {
         return imageResource;
     }
 
-    public void setImageResource(int imageResource) {
+    public void setImageResource(String imageResource) {
         this.imageResource = imageResource;
     }
 

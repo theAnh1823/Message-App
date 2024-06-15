@@ -3,10 +3,13 @@ package com.example.messageapplication.activity;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,14 +35,19 @@ import com.example.messageapplication.model.UserMessage;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private ActivityMainBinding mainBinding;
     private LayoutHeaderNavigationBinding headerBinding;
+    private MessageAdapter messageAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,10 +74,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         RecyclerView recyclerView = mainBinding.rcvMessage;
         LinearLayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
-        MessageAdapter messageAdapter = new MessageAdapter(getApplicationContext(), getListUserMessage(), new IClickItemMessageListener() {
+        messageAdapter = new MessageAdapter(getApplicationContext(), getListUserMessage(), new IClickItemMessageListener() {
             @Override
             public void onClick(UserMessage userMessage) {
-                Toast.makeText(MainActivity.this, userMessage.getUserName(), Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, ChatActivity.class);
+                intent.putExtra("userMessage", userMessage);
+                startActivity(intent);
             }
         });
         recyclerView.setAdapter(messageAdapter);
@@ -93,13 +103,38 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private List<UserMessage> getListUserMessage() {
         List<UserMessage> list = new ArrayList<>();
-        list.add(new UserMessage(1, R.drawable.avatar_3d, "Vũ Khắc Vanh", "Đi chơi không?", "6:30"));
-        list.add(new UserMessage(2, R.drawable.avatar_3d, "Bùi Việt Anh", "Haha", "19/05"));
-        list.add(new UserMessage(3, R.drawable.avatar_3d, "Nguyễn Huy Hoàng", "Cảm ơn bạn!", "19/05"));
-        list.add(new UserMessage(4, R.drawable.avatar_3d, "Bùi Xuân Anh", "Tuyệt vời", "18/05"));
-        list.add(new UserMessage(5, R.drawable.avatar_3d, "Nguyễn Văn An", "Hello", "15/05"));
+
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("users")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        // Xử lý dữ liệu trả về từ Firestore
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            String userId = document.getId();
+
+                            // Kiểm tra nếu userId không phải là của người dùng hiện tại
+                            if (!userId.equals(currentUserId)) {
+                                String fullName = document.getString(getString(R.string.key_name));
+                                String profileImageUrl = document.getString(getString(R.string.key_profile_image_url));
+                                String birthday = document.getString(getString(R.string.key_birthday));
+                                String gender = document.getString(getString(R.string.key_gender));
+
+                                UserMessage userMessage = new UserMessage(userId, profileImageUrl, fullName, gender, birthday);
+                                list.add(userMessage);
+                            }
+                        }
+                        messageAdapter.notifyDataSetChanged();
+                    } else {
+                        Log.w("Firestore", "Error getting documents.", task.getException());
+                    }
+                });
+
+
         return list;
     }
 
@@ -121,20 +156,41 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @SuppressLint("CheckResult")
     private void showUserInformation() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            String name = user.getDisplayName();
-            String email = user.getEmail();
-            Uri photoUrl = user.getPhotoUrl();
 
-            if (name == null) {
-                headerBinding.tvUserName.setVisibility(View.GONE);
-            } else {
-                headerBinding.tvUserName.setVisibility(View.VISIBLE);
-                headerBinding.tvUserName.setText(name);
-            }
+        if (user != null) {
+            String email = user.getEmail();
             headerBinding.tvUserEmail.setText(email);
-            Glide.with(this).load(photoUrl).error(R.drawable.avatar_3d).into(headerBinding.imgUserAvatar);
+
+            String uid = user.getUid();
+            db.collection("users").document(uid).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            String name = documentSnapshot.getString("name");
+                            String profileImageUrl = documentSnapshot.getString("profile image url");
+
+                            headerBinding.tvUserName.setText(name);
+
+                            if (profileImageUrl != null) {
+                                Uri profileImageUri = Uri.parse(profileImageUrl);
+                                try {
+                                    // Lấy InputStream của URI và chuyển thành Bitmap
+                                    InputStream inputStream = getContentResolver().openInputStream(profileImageUri);
+                                    Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+                                    headerBinding.imgUserAvatar.setImageBitmap(bitmap);
+                                } catch (FileNotFoundException e) {
+                                    Log.e("ProfileImageError", "File not found: " + e.getMessage());
+                                }
+                            }
+
+                        } else {
+                            Log.d("Firestore", "No such document");
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.w("Firestore", "Error getting document", e);
+                    });
         }
     }
 

@@ -10,6 +10,7 @@ import com.example.messageapplication.R;
 
 import android.util.Patterns;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -28,6 +29,7 @@ public class SignUpActivity extends AppCompatActivity {
     private String email;
     private String initialPassword;
     private String confirmedPassword;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +39,7 @@ public class SignUpActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().hide();
         }
+        mAuth = FirebaseAuth.getInstance();
 
         signUpBinding.btnSignUp.setOnClickListener(v -> {
             getInformationTextInput();
@@ -45,11 +48,19 @@ public class SignUpActivity extends AppCompatActivity {
                     signUpBinding.textInputLayoutPassword.setError(getString(R.string.password_must_be_at_least_6_characters));
                 } else if (initialPassword.equals(confirmedPassword) && isValidEmail(email)) {
                     signUpBinding.textInputLayoutPassword.setError(null);
-                    signUpBinding.tvWarning.setVisibility(View.GONE);
-                    onCLickSignUp();
+                    showEmailVerificationWarning();
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    if (user != null) {
+                        checkEmailVerification();
+                    } else {
+                        createAccount();
+                    }
+                } else {
+                    showSignUpError();
                 }
-            } else
-                signUpBinding.tvWarning.setVisibility(View.VISIBLE);
+            } else {
+                showSignUpError();
+            }
         });
     }
 
@@ -59,9 +70,7 @@ public class SignUpActivity extends AppCompatActivity {
         confirmedPassword = Objects.requireNonNull(signUpBinding.textInputReEnterPassword.getText()).toString().trim();
     }
 
-    private void onCLickSignUp() {
-        signUpBinding.progressBar.setVisibility(View.VISIBLE);
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    private void createAccount() {
         mAuth.createUserWithEmailAndPassword(email, confirmedPassword)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -69,19 +78,47 @@ public class SignUpActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             FirebaseUser user = mAuth.getCurrentUser();
                             if (user != null) {
-                                String userId = user.getUid();
-                                Intent intent = new Intent(SignUpActivity.this, ProfileActivity.class);
-                                intent.putExtra(getString(R.string.key_user_id), userId);
-                                intent.putExtra(getString(R.string.key_email), email);
-                                intent.putExtra(getString(R.string.key_password), initialPassword);
-                                startActivity(intent);
+                                sendEmailVerification(user);
                             }
-                        } else {
-                            signUpBinding.progressBar.setVisibility(View.GONE);
-                            signUpBinding.tvWarning.setVisibility(View.VISIBLE);
                         }
                     }
                 });
+    }
+
+    private void sendEmailVerification(FirebaseUser user) {
+        user.sendEmailVerification()
+                .addOnCompleteListener(this, task -> {
+                });
+    }
+
+    private void checkEmailVerification() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null) {
+            user.reload()
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (user.isEmailVerified()) {
+                                String userId = user.getUid();
+                                Intent intent = new Intent(SignUpActivity.this, ProfileActivity.class);
+                                intent.putExtra(getString(R.string.key_user_id), userId);
+                                startActivity(intent);
+                            }
+                        }
+                    });
+        }
+    }
+
+    private void showSignUpError(){
+        signUpBinding.tvWarning.setText(R.string.please_check_your_account_or_password);
+        signUpBinding.tvWarning.setTextColor(getColor(R.color.red));
+        signUpBinding.tvWarning.setVisibility(View.VISIBLE);
+    }
+
+    private void showEmailVerificationWarning(){
+        signUpBinding.tvWarning.setText(R.string.please_check_email_verification);
+        signUpBinding.tvWarning.setTextColor(getColor(R.color.usaf_academy_blue));
+        signUpBinding.tvWarning.setVisibility(View.VISIBLE);
     }
 
     private boolean isValidEmail(CharSequence email) {

@@ -17,6 +17,7 @@
     <string name="create_account">Tạo tài khoản mới</string>
     <string name="enter_the_password">Nhập lại mật khẩu</string>
     <string name="please_check_your_account_or_password">Vui lòng kiểm tra lại tài khoản hoặc mật khẩu của bạn</string>
+    <string name="please_check_email_verification">Xin vui lòng kiểm tra email của bạn và nhấp vào liên kết xác thực để hoàn tất quá trình đăng ký tài khoản. Nếu bạn đã xác thực, xin vui lòng nhấn nút đăng ký để tiếp tục.</string>
     <string name="account_authentication">Xác thực tài khoản</string>
     <string name="please_fill_in_full_name">Vui lòng điền đầy đủ Họ và Tên</string>
     <string name="password_must_be_at_least_6_characters">Mật khẩu của bạn phải dài ít nhất 6 ký tự</string>
@@ -24,6 +25,7 @@
     <string name="notification_reset_password">Vui lòng nhập địa chỉ email của bạn vào ô bên dưới và nhấn Xác nhận để nhận thông báo đặt lại mật khẩu.</string>
     <string name="dialog_sign_out">Bạn có chắc chắn muốn đăng xuất khỏi thiết bị?</string>
 
+    <string name="message">Nhắn tin</string>
     <string name="enter_phone_number">Vui lòng nhập số điện thoại của bạn</string>
     <string name="phone_number">Số điện thoại</string>
     <string name="enter_verification_code">Vui lòng kiểm tra tin nhắn SMS để lấy mã xác minh và hoàn tất quá trình xác thực</string>
@@ -36,7 +38,7 @@
     <string name="settings">Cài đặt</string>
     <string name="invite_friends">Gửi lời mời</string>
     <string name="sign_out">Đăng xuất</string>
-    
+
     <string name="gender">Giới tính</string>
     <string name="date_of_birth">Ngày sinh</string>
     <string name="first_name">Họ</string>
@@ -53,6 +55,7 @@
     <string name="key_last_name">last name</string>
     <string name="key_birthday">birthday</string>
     <string name="key_gender">gender</string>
+    <string name="key_profile_image_url">profile image url</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>

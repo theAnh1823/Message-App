@@ -3,6 +3,7 @@ package com.example.messageapplication.activity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -17,12 +18,12 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import com.example.messageapplication.R;
 import com.example.messageapplication.databinding.ActivityProfileBinding;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.io.IOException;
@@ -33,102 +34,88 @@ public class ProfileActivity extends AppCompatActivity {
     public static final int MY_REQUEST_CODE = 10;
     private Uri uri;
     private ActivityProfileBinding profileBinding;
-    private String userId, email, password;
+    private String userId;
     private final ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+                @SuppressLint("WrongConstant")
                 @Override
                 public void onActivityResult(ActivityResult result) {
-                    if (result.getResultCode() == RESULT_OK){
+                    if (result.getResultCode() == RESULT_OK) {
                         Intent intent = result.getData();
-                        if (intent == null){
-                            return;
-                        }
-                        uri = intent.getData();
-                        try {
-                            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                            profileBinding.profilePicture.setImageBitmap(bitmap);
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
+                        if (intent != null) {
+                            uri = intent.getData();
+                            // Duy trì quyền truy cập lâu dài
+                            final int takeFlags = intent.getFlags()
+                                    & (Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                    | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                            getContentResolver().takePersistableUriPermission(uri, takeFlags);
+                            try {
+                                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+                                profileBinding.profilePicture.setImageBitmap(bitmap);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
                     }
                 }
             });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         profileBinding = ActivityProfileBinding.inflate(getLayoutInflater());
         setContentView(profileBinding.getRoot());
 
-        Intent intent = getIntent();
-        userId = intent.getStringExtra(getString(R.string.key_user_id));
-        email = intent.getStringExtra(getString(R.string.key_email));
-        password = intent.getStringExtra(getString(R.string.key_password));
-
-        updateUserProfileView();
+        Intent intentReceived = getIntent();
+        userId = intentReceived.getStringExtra(getString(R.string.key_user_id));
 
         profileBinding.layoutProfilePicture.setOnClickListener(v -> {
             onClickRequestPermission();
         });
 
         profileBinding.btnConfirm.setOnClickListener(v -> {
-            if (isNameFieldFilled())
+            if (isNameFieldFilled()) {
                 saveUserInformation();
+
+                Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
+                startActivity(intent);
+                finishAffinity();
+            }
         });
 
     }
 
     private void onClickRequestPermission() {
-        if(this.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
-            openGallery();
-        } else {
+        if (this.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE};
-            requestPermissions(permissions, MY_REQUEST_CODE);
+            ActivityCompat.requestPermissions(this, permissions, MY_REQUEST_CODE);
+        } else {
+            openGallery();
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == MY_REQUEST_CODE){
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+        if (requestCode == MY_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 openGallery();
             }
         }
     }
 
-    public void openGallery() {
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        activityResultLauncher.launch(Intent.createChooser(intent, "Select picture"));
+    private Uri getUriFromDrawable(int drawableId) {
+        return Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE
+                + "://" + getResources().getResourcePackageName(drawableId)
+                + '/' + getResources().getResourceTypeName(drawableId)
+                + '/' + getResources().getResourceEntryName(drawableId));
     }
 
-    private void updateUserProfileView() {
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        FirebaseUser user = mAuth.getCurrentUser();
-        if (user != null) {
-            String uid = user.getUid();
-
-            // Lấy thông tin người dùng từ Firestore
-            db.collection("users").document(uid).get()
-                    .addOnSuccessListener(documentSnapshot -> {
-                        if (documentSnapshot.exists()) {
-                            // Lấy thông tin từ documentSnapshot
-                            String address = documentSnapshot.getString("address");
-                            String birthday = documentSnapshot.getString("birthday");
-                            String gender = documentSnapshot.getString("sex");
-                            // Xử lý các thông tin lấy được
-                        } else {
-                            Log.d("Firestore", "No such document");
-                        }
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.w("Firestore", "Error getting document", e);
-                    });
-        }
-
+    public void openGallery() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("image/*");
+        activityResultLauncher.launch(intent);
     }
 
     private boolean isNameFieldFilled() {
@@ -152,61 +139,35 @@ public class ProfileActivity extends AppCompatActivity {
         String birthday = profileBinding.datePickerBirthday.getDayOfMonth() + "/" + (profileBinding.datePickerBirthday.getMonth() + 1)
                 + "/" + profileBinding.datePickerBirthday.getYear();
         String gender = getGenderSelected();
+        if (uri == null) {
+            uri = getUriFromDrawable(R.drawable.avatar_3d);
+        }
+        String profileImageUrl = uri.toString();
 
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        // Tạo một bản ghi người dùng với thông tin bổ sung
         Map<String, Object> userProfile = new HashMap<>();
         userProfile.put(getString(R.string.key_name), fullName);
-        userProfile.put("photoUrl", uri);
+        userProfile.put(getString(R.string.key_profile_image_url), profileImageUrl);
         userProfile.put(getString(R.string.key_birthday), birthday);
         userProfile.put(getString(R.string.key_gender), gender);
 
-        // Lưu thông tin vào Firestore
         db.collection("users").document(userId).set(userProfile)
                 .addOnSuccessListener(aVoid -> {
-                    // Lưu trữ thành công
                     Log.d("Firestore", "User profile successfully updated!");
                 })
                 .addOnFailureListener(e -> {
-                    // Xảy ra lỗi khi lưu trữ
                     Log.w("Firestore", "Error updating user profile", e);
                 });
-
-//        mAuth.createUserWithEmailAndPassword(email, password)
-//                .addOnCompleteListener(task -> {
-//                    if (task.isSuccessful()) {
-//                        // Đăng ký thành công, lấy người dùng hiện tại
-//                        FirebaseUser user = mAuth.getCurrentUser();
-//                        if (user != null) {
-//                            // Lấy UID của người dùng
-//                            String uid = user.getUid();
-//
-//                            // Tạo đối tượng UserProfileChangeRequest để cập nhật thông tin cơ bản
-//                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-//                                    .setDisplayName(fullName)
-//                                    .setPhotoUri(uri)
-//                                    .build();
-//                            user.updateProfile(profileUpdates);
-//
-//
-//                        }
-//                    } else {
-//                        // Xử lý lỗi đăng ký
-//                        Log.w("SignUp", "createUserWithEmail:failure", task.getException());
-//                    }
-//                });
-
     }
 
     @SuppressLint("NonConstantResourceId")
     private String getGenderSelected() {
-        if (profileBinding.radioButtonMale.isChecked()){
+        if (profileBinding.radioButtonMale.isChecked()) {
             return getString(R.string.male);
-        } else if (profileBinding.radioButtonFemale.isChecked()){
+        } else if (profileBinding.radioButtonFemale.isChecked()) {
             return getString(R.string.female);
-        } else if (profileBinding.radioButtonOther.isChecked()){
+        } else if (profileBinding.radioButtonOther.isChecked()) {
             return getString(R.string.other);
         }
         return getString(R.string.other);
