@@ -3,6 +3,7 @@ package com.example.messageapplication.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -40,25 +41,30 @@ public class VerifyActivity extends AppCompatActivity {
 
         verifyBinding.btnNextVerify.setOnClickListener(v -> {
             String phoneNumber = Objects.requireNonNull(verifyBinding.editPhoneNumber.getText()).toString().trim();
-            onClickVerifyPhoneNumber(phoneNumber);
+            if (phoneNumber.isEmpty() || !isValidPhoneNumber(phoneNumber)) {
+                Toast.makeText(this, getString(R.string.check_and_enter_the_correct_phone_number_and_country_code), Toast.LENGTH_SHORT).show();
+            } else{
+                verifyBinding.verifyProgressBar.setVisibility(View.VISIBLE);
+                onClickVerifyPhoneNumber(phoneNumber);
+            }
         });
     }
 
     private void onClickVerifyPhoneNumber(String phoneNumber) {
         PhoneAuthOptions options =
                 PhoneAuthOptions.newBuilder(mAuth)
-                        .setPhoneNumber(phoneNumber)       // Phone number to verify
-                        .setTimeout(60L, TimeUnit.SECONDS) // Timeout and unit
-                        .setActivity(this)                 // (optional) Activity for callback binding
+                        .setPhoneNumber(phoneNumber)       // Số điện thoại cần xác thực
+                        .setTimeout(60L, TimeUnit.SECONDS) // Thời gian chờ xác thực và đơn vị thời gian
+                        .setActivity(this)                 // Activity hiện tại
                         // If no activity is passed, reCAPTCHA verification can not be used.
                         .setCallbacks(new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
                             @Override
                             public void onVerificationCompleted(@NonNull PhoneAuthCredential phoneAuthCredential) {
-                                signInWithPhoneAuthCredential(phoneAuthCredential);
                             }
 
                             @Override
                             public void onVerificationFailed(@NonNull FirebaseException e) {
+                                verifyBinding.verifyProgressBar.setVisibility(View.GONE);
                                 Toast.makeText(VerifyActivity.this, R.string.verification_failed, Toast.LENGTH_SHORT).show();
                             }
 
@@ -72,42 +78,14 @@ public class VerifyActivity extends AppCompatActivity {
         PhoneAuthProvider.verifyPhoneNumber(options);
     }
 
-    private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
-        mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d("TAG", "signInWithCredential:success");
-
-                            FirebaseUser user = task.getResult().getUser();
-                            // Update UI
-                            if (user != null) {
-                                goToMainActivity(user.getPhoneNumber());
-                            }
-                        } else {
-                            // Sign in failed, display a message and update the UI
-                            Log.w("TAG", "signInWithCredential:failure", task.getException());
-                            if (task.getException() instanceof FirebaseAuthInvalidCredentialsException) {
-                                // The verification code entered was invalid
-                                Toast.makeText(VerifyActivity.this, R.string.the_verification_code_entered_was_invalid, Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    }
-                });
-    }
-
-    private void goToMainActivity(String phoneNumber) {
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.putExtra("phone_number", phoneNumber);
-        startActivity(intent);
-    }
-
     private void goToEnterOtpActivity(String phoneNumber, String verificationId) {
         Intent intent = new Intent(this, EnterOtpActivity.class);
         intent.putExtra("phone_number", phoneNumber);
         intent.putExtra("verification_id", verificationId);
         startActivity(intent);
+    }
+
+    private boolean isValidPhoneNumber(String phoneNumber) {
+        return phoneNumber.startsWith("+") && phoneNumber.length() > 1;
     }
 }

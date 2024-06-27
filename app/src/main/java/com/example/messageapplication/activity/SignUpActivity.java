@@ -72,14 +72,12 @@ public class SignUpActivity extends AppCompatActivity {
 
     private void createAccount() {
         mAuth.createUserWithEmailAndPassword(email, confirmedPassword)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            if (user != null) {
-                                sendEmailVerification(user);
-                            }
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (user != null) {
+                            // Đăng ký thành công thì gửi email xác thực
+                            sendEmailVerification(user);
                         }
                     }
                 });

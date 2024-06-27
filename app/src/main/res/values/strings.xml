@@ -33,6 +33,8 @@
     <string name="resend_otp">Gửi lại mã xác minh</string>
     <string name="the_verification_code_entered_was_invalid">Mã xác minh đã nhập không hợp lệ</string>
     <string name="verification_failed">Xác minh thất bại</string>
+    <string name="the_authentication_code_has_been_sent_back">Xin vui lòng kiểm tra tin nhắn của bạn. Mã xác thực đã được gửi lại</string>
+    <string name="check_and_enter_the_correct_phone_number_and_country_code">Vui lòng kiểm tra và nhập chính xác số điện thoại cùng mã quốc gia.</string>
 
     <string name="contacts">Liên hệ</string>
     <string name="settings">Cài đặt</string>

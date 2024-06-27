@@ -77,9 +77,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         messageAdapter = new MessageAdapter(getApplicationContext(), getListUserMessage(), new IClickItemMessageListener() {
             @Override
             public void onClick(UserMessage userMessage) {
-                Intent intent = new Intent(MainActivity.this, ChatActivity.class);
-                intent.putExtra("userMessage", userMessage);
-                startActivity(intent);
             }
         });
         recyclerView.setAdapter(messageAdapter);
@@ -214,3 +211,4 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         alertDialog.show();
     }
 }
+

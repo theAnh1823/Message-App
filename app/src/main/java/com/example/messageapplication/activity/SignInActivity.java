@@ -63,8 +63,7 @@ public class SignInActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            Intent intent = new Intent(SignInActivity.this, MainActivity.class);
-                            startActivity(intent);
+                            goToVerifyActivity();
                             signInBinding.tvWarning.setVisibility(View.GONE);
                             finishAffinity();
                         } else {
@@ -76,5 +75,15 @@ public class SignInActivity extends AppCompatActivity {
 
     private boolean isValidEmail(CharSequence email) {
         return !TextUtils.isEmpty(email) && Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
+
+    private void goToMainActivity() {
+        Intent intent = new Intent(SignInActivity.this, MainActivity.class);
+        startActivity(intent);
+    }
+
+    private void goToVerifyActivity() {
+        Intent intent = new Intent(SignInActivity.this, VerifyActivity.class);
+        startActivity(intent);
     }
 }
